@@ -11,6 +11,23 @@ FROM sys.dm_exec_query_stats qs
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
 WHERE st.objectid = OBJECT_ID('dbo.MyStoredProcedure');
 
+SELECT 
+    qs.query_hash,
+    qs.query_plan_hash,
+    qs.plan_handle,
+    SUBSTRING(
+        st.text,
+        qs.statement_start_offset/2 + 1,
+        (CASE WHEN qs.statement_end_offset = -1 
+              THEN LEN(st.text) 
+              ELSE qs.statement_end_offset 
+         END - qs.statement_start_offset)/2 + 1
+    ) AS statement_text,
+    qp.query_plan AS statement_plan_xml
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+CROSS APPLY sys.dm_exec_query_plan(qs.plan_handle) qp
+WHERE st.objectid = OBJECT_ID('dbo.MyStoredProcedure');
 
 DECLARE @handle VARBINARY(64) = 0x060011009d48871f207efac8a201000001000000000000000000000000000000000000000000000000000000
 
