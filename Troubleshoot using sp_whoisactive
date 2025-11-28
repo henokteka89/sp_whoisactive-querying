@@ -1,0 +1,18 @@
+
+-- Troubleshooting tempdb Contention  
+EXEC sp_WhoIsActive
+    @sort_order = '[tempdb_current] DESC',
+    @get_plans = 1,
+    @output_column_list = '[start_time][session_id][sql_text][query_plan][wait_info][temp%]';
+-- Troubleshooting Blocking
+EXEC sp_WhoIsActive
+    @find_block_leaders = 1,
+    @sort_order = '[blocked_session_count] DESC',
+    @get_plans = 1,
+    @get_task_info = 2,
+    @get_additional_info = 1,
+    @output_column_list = '[start_time][session_id][sql_text][query_plan][wait_info][block%][additional_info]';
+
+-- Which Queries Are Actually Doing Work In SQL Server (check in 5 seconds how much cputime are queries spending and why)
+exec sp_whoisactive @delta_interval= 5, @get_plans = 1
+e.g. if a query show delta cpu 0f 1 in 5 seconds, check what it is waiting for
