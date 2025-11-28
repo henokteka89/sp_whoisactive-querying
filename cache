@@ -10,3 +10,27 @@ SELECT
 FROM sys.dm_exec_query_stats qs
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
 WHERE st.objectid = OBJECT_ID('dbo.MyStoredProcedure');
+
+
+DECLARE @handle VARBINARY(64) = 0x060011009d48871f207efac8a201000001000000000000000000000000000000000000000000000000000000
+
+SELECT 
+    DB_NAME(st.dbid) AS database_name,
+    qs.sql_handle,
+    qs.plan_handle,
+    qs.creation_time,
+    qs.last_execution_time,
+    qs.execution_count,
+    qs.total_worker_time,
+    qs.total_elapsed_time,
+    qs.total_logical_reads,
+    qs.total_logical_writes,
+    st.text AS sql_text,
+    qp.query_plan,
+    qs.statement_start_offset,
+    qs.statement_end_offset
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+CROSS APPLY sys.dm_exec_query_plan(qs.plan_handle) qp
+WHERE qs.sql_handle = @handle
+   OR qs.plan_handle = @handle;
